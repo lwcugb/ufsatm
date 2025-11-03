@@ -1687,6 +1687,10 @@ subroutine update_atmos_chemistry(state, rc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
+        call cplFieldGet(state,'ocean_fraction', farrayPtr2d=focn, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
         call cplFieldGet(state,'soil_type', farrayPtr2d=stype, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
@@ -1810,6 +1814,7 @@ subroutine update_atmos_chemistry(state, rc)
         stc = reshape(GFS_Sfcprop%stc, shape(stc))
         vfrac = reshape(GFS_Sfcprop%vfrac, shape(vfrac))
         xlai = reshape(GFS_Sfcprop%xlaixy, shape(xlai))
+        focn = reshape(GFS_Sfcprop%oceanfrac, shape(focn))
         !if (nint(slmsk(i,j)) == 2) then
         !  if (GFS_Control%isot == 1) then
         !    stype(i,j) = 16._ESMF_KIND_R8
