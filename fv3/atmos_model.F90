@@ -1687,15 +1687,33 @@ subroutine update_atmos_chemistry(state, rc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
-        call cplFieldGet(state,'ocean_fraction', farrayPtr2d=focn, rc=localrc)
-        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
-          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
-
         call cplFieldGet(state,'soil_type', farrayPtr2d=stype, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
         call cplFieldGet(state,'vegetation_type', farrayPtr2d=vtype, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+        
+        call cplFieldGet(state,'inst_liq_nonconv_tendency_levels', &
+                         farrayPtr3d=pflls, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_ice_nonconv_tendency_levels', &
+                         farrayPtr3d=pfils, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'lake_fraction', farrayPtr2d=flake, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+        
+        call cplFieldGet(state,'ocean_fraction', farrayPtr2d=focn, rc=localrc)
+        if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__, rcToReturn=rc)) return
+
+        call cplFieldGet(state,'inst_surface_soil_wetness', farrayPtr2d=swet, rc=localrc)
         if (ESMF_LogFoundError(rcToCheck=localrc, msg=ESMF_LOGERR_PASSTHRU, &
           line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
@@ -1814,7 +1832,16 @@ subroutine update_atmos_chemistry(state, rc)
         stc = reshape(GFS_Sfcprop%stc, shape(stc))
         vfrac = reshape(GFS_Sfcprop%vfrac, shape(vfrac))
         xlai = reshape(GFS_Sfcprop%xlaixy, shape(xlai))
+        pfils = reshape(GFS_Coupling%pfi_lsan, shape(pfils))
+        pflls = reshape(GFS_Coupling%pfl_lsan, shape(pflls))
         focn = reshape(GFS_Sfcprop%oceanfrac, shape(focn))
+        flake = reshape(GFS_Sfcprop%lakefrac, shape(flake))
+        where (flake<zero) flake = zero
+        if (GFS_Control%lsm == GFS_Control%lsm_ruc) then
+          swet = reshape(GFS_Sfcprop%wetness, shape(swet))
+        else
+          swet = reshape(GFS_IntDiag%wet1, shape(swet))
+        end if
         !if (nint(slmsk(i,j)) == 2) then
         !  if (GFS_Control%isot == 1) then
         !    stype(i,j) = 16._ESMF_KIND_R8
